@@ -221,7 +221,7 @@ const handleLogin = async () => {
   }
 
   try {
-    const response = await fetch("backend-psi-blush-35.vercel.app/login", {
+    const response = await fetch("https://backend-psi-blush-35.vercel.app/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -266,7 +266,7 @@ const handlePasswordSubmit = async () => {
   }
 
   try {
-    const response = await fetch("backend-psi-blush-35.vercel.app/login/password", {
+    const response = await fetch("https://backend-psi-blush-35.vercel.app/login/password", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

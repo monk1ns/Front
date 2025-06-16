@@ -73,7 +73,7 @@ const fetchMaterial = async () => {
     }
     const materialId = route.params.id; 
     console.log("Fetching material with ID:", materialId);
-    const response = await fetch(`backend-psi-blush-35.vercel.app/materials/${materialId}`, {
+    const response = await fetch(`https://backend-psi-blush-35.vercel.app/materials/${materialId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

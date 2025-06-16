@@ -110,7 +110,7 @@ const fetchOrders = async () => {
       return;
     }
 
-    const response = await fetch("backend-psi-blush-35.vercel.app/orders", {
+    const response = await fetch("https://backend-psi-blush-35.vercel.app/orders", {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

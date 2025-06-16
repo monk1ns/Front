@@ -142,7 +142,7 @@ const fetchOrder = async () => {
       isLoading.value = false;
       return;
     }
-    const response = await fetch(`backend-psi-blush-35.vercel.app/orders/${route.params.id}`, {
+    const response = await fetch(`https://backend-psi-blush-35.vercel.app/orders/${route.params.id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -174,7 +174,7 @@ const acceptOrder = async () => {
       return;
     }
 
-    const response = await fetch(`backend-psi-blush-35.vercel.app/api/orders/${route.params.id}/accept`, {
+    const response = await fetch(`https://backend-psi-blush-35.vercel.app/api/orders/${route.params.id}/accept`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -207,7 +207,7 @@ const finishOrder = async () => {
       error.value = "Token not found";
       return;
     }
-    const response = await fetch(`backend-psi-blush-35.vercel.app/orders/${route.params.id}/finish`, {
+    const response = await fetch(`https://backend-psi-blush-35.vercel.app/orders/${route.params.id}/finish`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

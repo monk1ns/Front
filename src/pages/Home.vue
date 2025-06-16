@@ -99,7 +99,7 @@ export default defineComponent({
 
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("backend-psi-blush-35.vercel.app/api/shifts/start", {
+        const response = await fetch("https://backend-psi-blush-35.vercel.app/api/shifts/start", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -135,7 +135,7 @@ export default defineComponent({
 
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`backend-psi-blush-35.vercel.app/api/shifts/end/${shiftId.value}`, {
+        const response = await fetch(`https://backend-psi-blush-35.vercel.app/api/shifts/end/${shiftId.value}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

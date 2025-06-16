@@ -1118,7 +1118,7 @@ const getRanking = (stat) => {
 // Fetch data functions
 const fetchOrders = async () => {
   try {
-    const response = await axios.get('backend-psi-blush-35.vercel.app/orders', {
+    const response = await axios.get('https://backend-psi-blush-35.vercel.app/orders', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     orders.value = response.data;
@@ -1130,7 +1130,7 @@ const fetchOrders = async () => {
 
 const fetchMaterials = async () => {
   try {
-    const response = await axios.get('backend-psi-blush-35.vercel.app/materials', {
+    const response = await axios.get('https://backend-psi-blush-35.vercel.app/materials', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     materials.value = response.data;
@@ -1143,7 +1143,7 @@ const fetchMaterials = async () => {
 
 const fetchEmployees = async () => {
   try {
-    const response = await axios.get('backend-psi-blush-35.vercel.app/employees', {
+    const response = await axios.get('https://backend-psi-blush-35.vercel.app/employees', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     employees.value = response.data;
@@ -1155,7 +1155,7 @@ const fetchEmployees = async () => {
 
 const fetchShifts = async () => {
   try {
-    const response = await axios.get('backend-psi-blush-35.vercel.app/api/shifts', {
+    const response = await axios.get('https://backend-psi-blush-35.vercel.app/api/shifts', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     shifts.value = response.data;
@@ -1364,7 +1364,7 @@ const addOrder = async () => {
   };
 
   try {
-    const response = await axios.post('backend-psi-blush-35.vercel.app/orders', orderData, {
+    const response = await axios.post('https://backend-psi-blush-35.vercel.app/orders', orderData, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     orders.value.push(response.data);
@@ -1388,7 +1388,7 @@ const saveEdit = async () => {
     }
 
     try {
-      const originalOrderResponse = await axios.get(`backend-psi-blush-35.vercel.app/orders/${editData.value.id}`, {
+      const originalOrderResponse = await axios.get(`https://backend-psi-blush-35.vercel.app/orders/${editData.value.id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const originalOrderMaterials = originalOrderResponse.data.materials || [];
@@ -1401,7 +1401,7 @@ const saveEdit = async () => {
           if (material) {
             const oldReserved = material.reserved_quantity || 0;
             const newReserved = Math.max(0, oldReserved - (origMat.daudzums * formData.value.daudzums));
-            await axios.put(`backend-psi-blush-35.vercel.app/materials/${origMat.material_id}`, {
+            await axios.put(`https://backend-psi-blush-35.vercel.app/materials/${origMat.material_id}`, {
               ...material,
               reserved_quantity: newReserved
             }, {
@@ -1416,7 +1416,7 @@ const saveEdit = async () => {
           if (material) {
             const oldReserved = material.reserved_quantity || 0;
             const newReserved = oldReserved + (newMat.quantity * formData.value.daudzums);
-            await axios.put(`backend-psi-blush-35.vercel.app/materials/${newMat.material_id || newMat.id}`, {
+            await axios.put(`https://backend-psi-blush-35.vercel.app/materials/${newMat.material_id || newMat.id}`, {
               ...material,
               reserved_quantity: newReserved
             }, {
@@ -1436,7 +1436,7 @@ const saveEdit = async () => {
         }))
       };
 
-      const response = await axios.put(`backend-psi-blush-35.vercel.app/api/orders/${editData.value.id}`, updatedOrderData, {
+      const response = await axios.put(`https://backend-psi-blush-35.vercel.app/api/orders/${editData.value.id}`, updatedOrderData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 
@@ -1459,7 +1459,7 @@ const saveEdit = async () => {
       return;
     }
     try {
-      const response = await axios.put(`backend-psi-blush-35.vercel.app/materials/${formData.value.id}`, {
+      const response = await axios.put(`https://backend-psi-blush-35.vercel.app/materials/${formData.value.id}`, {
         nosaukums: formData.value.nosaukums,
         daudzums: formData.value.daudzums,
         vieniba: formData.value.vieniba,
@@ -1488,7 +1488,7 @@ const saveEdit = async () => {
       return;
     }
     try {
-      const response = await axios.put(`backend-psi-blush-35.vercel.app/employees/${formData.value.id}`, formData.value, {
+      const response = await axios.put(`https://backend-psi-blush-35.vercel.app/employees/${formData.value.id}`, formData.value, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const index = employees.value.findIndex(e => e.id === formData.value.id);
@@ -1524,7 +1524,7 @@ const saveEmployeePasswordChange = async () => {
   }
 
   try {
-    await axios.patch(`backend-psi-blush-35.vercel.app/employees/${editData.value.id}/password`, {
+    await axios.patch(`https://backend-psi-blush-35.vercel.app/employees/${editData.value.id}/password`, {
       password: formData.value.password
     }, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -1612,7 +1612,7 @@ const addEmployee = async () => {
       delete employeeData.password;
     }
 
-    const response = await axios.post('backend-psi-blush-35.vercel.app/employees', employeeData, {
+    const response = await axios.post('https://backend-psi-blush-35.vercel.app/employees', employeeData, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     employees.value.push(response.data);
@@ -1654,7 +1654,7 @@ const transferMaterial = async () => {
   }
 
   try {
-    await axios.post(`backend-psi-blush-35.vercel.app/materials/transfer`, {
+    await axios.post(`https://backend-psi-blush-35.vercel.app/materials/transfer`, {
       material_id: transferData.value.material_id,
       daudzums: transferData.value.daudzums,
       toNoliktava: transferData.value.toNoliktava
@@ -1680,7 +1680,7 @@ const addMaterial = async () => {
     return;
   }
   try {
-    const response = await axios.post('backend-psi-blush-35.vercel.app/materials', formData.value, {
+    const response = await axios.post('https://backend-psi-blush-35.vercel.app/materials', formData.value, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     materials.value.push(response.data);
@@ -1937,7 +1937,7 @@ const confirmDelete = async () => {
           const materialToUpdate = materials.value.find(m => m.id === mat.material_id);
           if (materialToUpdate) {
             const newReservedQuantity = (materialToUpdate.reserved_quantity || 0) - mat.daudzums;
-            await axios.put(`backend-psi-blush-35.vercel.app/materials/${mat.material_id}`, {
+            await axios.put(`https://backend-psi-blush-35.vercel.app/materials/${mat.material_id}`, {
               ...materialToUpdate,
               reserved_quantity: Math.max(0, newReservedQuantity)
             }, {
@@ -1948,7 +1948,7 @@ const confirmDelete = async () => {
         toast.info('Materiāli atbrīvoti no rezervācijas.');
       }
 
-      await axios.delete(`backend-psi-blush-35.vercel.app/orders/${itemToDelete.value.id}`, {
+      await axios.delete(`https://backend-psi-blush-35.vercel.app/orders/${itemToDelete.value.id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       orders.value = orders.value.filter(order => order.id !== itemToDelete.value.id);
@@ -1956,14 +1956,14 @@ const confirmDelete = async () => {
       fetchMaterials();
       fetchStats();
     } else if (deleteType.value === 'materials') {
-      await axios.delete(`backend-psi-blush-35.vercel.app/materials/${itemToDelete.value.id}`, {
+      await axios.delete(`https://backend-psi-blush-35.vercel.app/materials/${itemToDelete.value.id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       materials.value = materials.value.filter(material => material.id !== itemToDelete.value.id);
       toast.success('Materiāls veiksmīgi dzēsts!');
       fetchStats();
     } else if (deleteType.value === 'employees') {
-      await axios.delete(`backend-psi-blush-35.vercel.app/employees/${itemToDelete.value.id}`, {
+      await axios.delete(`https://backend-psi-blush-35.vercel.app/employees/${itemToDelete.value.id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       employees.value = employees.value.filter(employee => employee.id !== itemToDelete.value.id);

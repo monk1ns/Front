@@ -67,7 +67,7 @@ const fetchMaterials = async () => {
       return;
     }
 
-    const res = await fetch('backend-psi-blush-35.vercel.app/materials', {
+    const res = await fetch('https://backend-psi-blush-35.vercel.app/materials', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

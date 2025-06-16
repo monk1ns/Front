@@ -29,7 +29,7 @@ const logout = async () => {
       console.error("Token not found");
       return;
     }
-    const response = await fetch('backend-psi-blush-35.vercel.app/logout', {
+    const response = await fetch('https://backend-psi-blush-35.vercel.app/logout', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
