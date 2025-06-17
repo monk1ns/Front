@@ -104,9 +104,9 @@
               ]"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20V10"></path>
-                <path d="M18 20V4"></path>
-                <path d="M6 20v-4"></path>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
               Statistika
             </button>
@@ -146,37 +146,29 @@
                 </div>
 
                 <!-- Material search input -->
-                <div class="mt-4">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Meklēt materiālu</label>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Materiāli</label>
                   <div class="relative">
-                    <input
+                    <input 
                       v-model="materialSearch"
                       type="text"
-                      class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
-                      placeholder="Sāciet rakstīt materiāla nosaukumu..."
+                      class="p-3 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-colors"
+                      placeholder="Meklēt materiālus..."
+                      @input="filterMaterials"
                     />
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-3.5 text-gray-400">
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                  </div>
-
-                  <ul v-if="filteredMaterialsForSearch.length && materialSearch" class="bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto z-10">
-                    <li
-                      v-for="material in filteredMaterialsForSearch"
-                      :key="material.id"
-                      @click="showEditDialog ? addMaterialToEdit(material) : addMaterialToOrder(material)"
-                      class="px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
-                    >
-                      <div class="flex justify-between items-center">
-                        <span class="font-medium">{{ material.nosaukums }}</span>
-                        <span class="text-sm text-gray-500">Pieejams: {{ material.daudzums }} {{ material.vieniba }}</span>
+                    <div v-if="materialSearch && filteredMaterials.length > 0" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div 
+                        v-for="material in filteredMaterials" 
+                        :key="material.id"
+                        class="p-2 hover:bg-gray-100 cursor-pointer"
+                        @click="addMaterialToOrder(material)"
+                      >
+                        {{ material.nosaukums }} ({{ material.daudzums }} {{ material.vieniba }})
                       </div>
-                    </li>
-                  </ul>
+                    </div>
+                  </div>
                 </div>
 
-                <!-- Show selected materials -->
                 <div v-if="orderMaterials.length" class="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
                   <h4 class="text-sm font-semibold mb-3 text-gray-700">Materiāli pasūtījumā:</h4>
                   <div v-for="(mat, index) in orderMaterials" :key="mat.material_id || mat.id" class="flex items-center gap-3 mb-2 p-2 bg-white rounded-lg border border-gray-100 shadow-sm">
@@ -205,19 +197,6 @@
                       </button>
                     </div>
                   </div>
-                </div>
-                
-                <div class="mb-4">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Atbildīgais darbinieks</label>
-                  <select
-                    v-model="formData.responsible_employee_id"
-                    class="p-3 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none transition-colors"
-                  >
-                    <option value="">Izvēlēties darbinieku</option>
-                    <option v-for="employee in employees" :key="employee.id" :value="employee.id">
-                      {{ employee.vards }} {{ employee.uzvards }}
-                    </option>
-                  </select>
                 </div>
                 
                 <div class="mb-4">
@@ -415,25 +394,21 @@
             <div class="space-y-4">
               <div>
                 <p class="text-sm font-medium text-gray-700">Nosaukums:</p>
-                <p class="text-base text-gray-900">{{ detailsData.nosaukums }}</p>
+                <p class="text-sm text-gray-900">{{ detailsData.nosaukums }}</p>
               </div>
               <div>
                 <p class="text-sm font-medium text-gray-700">Daudzums:</p>
-                <p class="text-base text-gray-900">{{ detailsData.daudzums }}</p>
+                <p class="text-sm text-gray-900">{{ detailsData.daudzums }}</p>
               </div>
               <div>
                 <p class="text-sm font-medium text-gray-700">Statuss:</p>
-                <p class="text-base text-gray-900">{{ detailsData.status }}</p>
+                <p class="text-sm text-gray-900">{{ detailsData.status }}</p>
               </div>
-              <div>
-                <p class="text-sm font-medium text-gray-700">Atbildīgais darbinieks:</p>
-                <p class="text-base text-gray-900">{{ detailsData.employee ? `${detailsData.employee.vards} ${detailsData.employee.uzvards}` : 'Nav' }}</p>
-              </div>
-              <div>
+              <div v-if="detailsData.materials && detailsData.materials.length">
                 <p class="text-sm font-medium text-gray-700">Materiāli:</p>
-                <ul class="list-disc list-inside space-y-1">
-                  <li v-for="mat in detailsData.materials" :key="mat.material_id">
-                    {{ getMaterialName(mat.material_id) }}: {{ mat.daudzums }} {{ getMaterialUnit(mat.material_id) }}
+                <ul class="mt-2 space-y-2">
+                  <li v-for="material in detailsData.materials" :key="material.id" class="text-sm text-gray-900">
+                    {{ material.nosaukums }} - {{ material.daudzums }} {{ material.vieniba }}
                   </li>
                 </ul>
               </div>
@@ -491,6 +466,23 @@
               placeholder="Meklēt pasūtījumus..."
               class="max-w-xs w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
             />
+            <div class="flex gap-4">
+              <select 
+                v-model="sortBy"
+                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
+              >
+                <option value="nosaukums">Nosaukums</option>
+                <option value="daudzums">Daudzums</option>
+                <option value="status">Statuss</option>
+                <option value="responsible_employee">Atbildīgais</option>
+              </select>
+              <button 
+                @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'"
+                class="p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center w-12"
+              >
+                <i class="fas" :class="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </button>
+            </div>
             <button 
               @click="openAddDialog('orders')" 
               class="px-5 py-2.5 rounded-lg bg-gray-800 text-white hover:bg-gray-900 transition-colors flex items-center gap-2"
@@ -504,10 +496,9 @@
               <table class="w-full text-left table-auto">
                 <thead class="bg-gray-50 text-gray-600 uppercase text-sm">
                   <tr>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('nosaukums')">Nosaukums <i :class="['fas', sortBy === 'nosaukums' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'nosaukums' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('daudzums')">Daudzums <i :class="['fas', sortBy === 'daudzums' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'daudzums' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('status')">Statuss <i :class="['fas', sortBy === 'status' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'status' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('responsible_employee')">Atbildīgais <i :class="['fas', sortBy === 'responsible_employee' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'responsible_employee' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
+                    <th class="px-4 py-3">Nosaukums</th>
+                    <th class="px-4 py-3">Daudzums</th>
+                    <th class="px-4 py-3">Statuss</th>
                     <th class="px-4 py-3">Darbības</th>
                   </tr>
                 </thead>
@@ -528,7 +519,6 @@
                         {{ order.status }}
                       </span>
                     </td>
-                    <td class="px-4 py-3">{{ order.employee ? `${order.employee.vards} ${order.employee.uzvards}` : 'Nav' }}</td>
                     <td class="px-4 py-3 space-x-2">
                       <button @click="openDetailsDialog(order)" class="text-gray-600 hover:text-gray-900 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s5-10 10-10 10 10 10 10-5 10-10 10-10-10-10-10z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -542,7 +532,7 @@
                     </td>
                   </tr>
                   <tr v-if="filteredOrders.length === 0">
-                    <td colspan="6" class="px-4 py-3 text-center text-gray-500">Nav pasūtījumu</td>
+                    <td colspan="5" class="px-4 py-3 text-center text-gray-500">Nav pasūtījumu</td>
                   </tr>
                 </tbody>
               </table>
@@ -559,6 +549,25 @@
               placeholder="Meklēt materiālus..."
               class="max-w-xs w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
             />
+            <div class="flex gap-4">
+              <select 
+                v-model="sortBy"
+                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
+              >
+                <option value="nosaukums">Nosaukums</option>
+                <option value="daudzums">Daudzums</option>
+                <option value="vieniba">Vienība</option>
+                <option value="noliktava">Noliktava</option>
+                <option value="vieta">Vieta</option>
+                <option value="reserved_quantity">Rezervēts</option>
+              </select>
+              <button 
+                @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'"
+                class="p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center w-12"
+              >
+                <i class="fas" :class="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </button>
+            </div>
             <button 
               @click="openAddDialog('materials')" 
               class="px-5 py-2.5 rounded-lg bg-gray-800 text-white hover:bg-gray-900 transition-colors flex items-center gap-2"
@@ -572,12 +581,12 @@
               <table class="w-full text-left table-auto">
                 <thead class="bg-gray-50 text-gray-600 uppercase text-sm">
                   <tr>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('nosaukums')">Nosaukums <i :class="['fas', sortBy === 'nosaukums' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'nosaukums' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('daudzums')">Daudzums <i :class="['fas', sortBy === 'daudzums' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'daudzums' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('vieniba')">Vienība <i :class="['fas', sortBy === 'vieniba' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'vieniba' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('noliktava')">Noliktava <i :class="['fas', sortBy === 'noliktava' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'noliktava' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('vieta')">Vieta <i :class="['fas', sortBy === 'vieta' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'vieta' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('reserved_quantity')">Rezervēts <i :class="['fas', sortBy === 'reserved_quantity' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'reserved_quantity' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
+                    <th class="px-4 py-3">Nosaukums</th>
+                    <th class="px-4 py-3">Daudzums</th>
+                    <th class="px-4 py-3">Vienība</th>
+                    <th class="px-4 py-3">Noliktava</th>
+                    <th class="px-4 py-3">Vieta</th>
+                    <th class="px-4 py-3">Rezervēts</th>
                     <th class="px-4 py-3">Darbības</th>
                   </tr>
                 </thead>
@@ -619,6 +628,24 @@
               placeholder="Meklēt darbiniekus..."
               class="max-w-xs w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
             />
+            <div class="flex gap-4">
+              <select 
+                v-model="sortBy"
+                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
+              >
+                <option value="vards">Vārds</option>
+                <option value="uzvards">Uzvārds</option>
+                <option value="kods">Kods</option>
+                <option value="amats">Amats</option>
+                <option value="status">Statuss</option>
+              </select>
+              <button 
+                @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'"
+                class="p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center w-12"
+              >
+                <i class="fas" :class="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </button>
+            </div>
             <button 
               @click="openAddDialog('employees')" 
               class="px-5 py-2.5 rounded-lg bg-gray-800 text-white hover:bg-gray-900 transition-colors flex items-center gap-2"
@@ -632,11 +659,11 @@
               <table class="w-full text-left table-auto">
                 <thead class="bg-gray-50 text-gray-600 uppercase text-sm">
                   <tr>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('vards')">Vārds <i :class="['fas', sortBy === 'vards' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'vards' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('uzvards')">Uzvārds <i :class="['fas', sortBy === 'uzvards' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'uzvards' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('kods')">Kods <i :class="['fas', sortBy === 'kods' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'kods' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('amats')">Amats <i :class="['fas', sortBy === 'amats' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'amats' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setSort('status')">Statuss <i :class="['fas', sortBy === 'status' && sortDirection === 'asc' ? 'fa-sort-up' : sortBy === 'status' && sortDirection === 'desc' ? 'fa-sort-down' : 'fa-sort']"></i></th>
+                    <th class="px-4 py-3">Vārds</th>
+                    <th class="px-4 py-3">Uzvārds</th>
+                    <th class="px-4 py-3">Kods</th>
+                    <th class="px-4 py-3">Amats</th>
+                    <th class="px-4 py-3">Statuss</th>
                     <th class="px-4 py-3">Darbības</th>
                   </tr>
                 </thead>
@@ -674,37 +701,53 @@
               placeholder="Meklēt maiņas..."
               class="max-w-xs w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
             />
-             <input 
-              type="date"
-              v-model="dateRange.start"
-              class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
-            />
-            <input 
-              type="date"
-              v-model="dateRange.end"
-              class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
-            />
+            <div class="flex gap-4">
+              <select 
+                v-model="shiftSortKey"
+                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
+              >
+                <option value="worker_name">Darbinieks</option>
+                <option value="start_time">Sākums</option>
+                <option value="duration">Ilgums</option>
+              </select>
+              <button 
+                @click="shiftSortAsc = !shiftSortAsc"
+                class="p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center w-12"
+              >
+                <i class="fas" :class="shiftSortAsc ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </button>
+            </div>
+            <div class="flex gap-4">
+              <input 
+                type="date"
+                v-model="dateRange.start"
+                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
+              />
+              <input 
+                type="date"
+                v-model="dateRange.end"
+                class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors"
+              />
+            </div>
           </div>
           <div class="bg-white p-6 rounded-xl shadow-sm">
             <div class="overflow-x-auto">
               <table class="w-full text-left table-auto">
                 <thead class="bg-gray-50 text-gray-600 uppercase text-sm">
                   <tr>
-                    <th class="px-4 py-3 cursor-pointer" @click="setShiftSort('worker_name')">Darbinieks <i :class="['fas', shiftSortKey === 'worker_name' && shiftSortAsc ? 'fa-sort-up' : shiftSortKey === 'worker_name' && !shiftSortAsc ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setShiftSort('start_time')">Sākums <i :class="['fas', shiftSortKey === 'start_time' && shiftSortAsc ? 'fa-sort-up' : shiftSortKey === 'start_time' && !shiftSortAsc ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setShiftSort('end_time')">Beigas <i :class="['fas', shiftSortKey === 'end_time' && shiftSortAsc ? 'fa-sort-up' : shiftSortKey === 'end_time' && !shiftSortAsc ? 'fa-sort-down' : 'fa-sort']"></i></th>
-                    <th class="px-4 py-3 cursor-pointer" @click="setShiftSort('duration')">Ilgums <i :class="['fas', shiftSortKey === 'duration' && shiftSortAsc ? 'fa-sort-up' : shiftSortKey === 'duration' && !shiftSortAsc ? 'fa-sort-down' : 'fa-sort']"></i></th>
+                    <th class="px-4 py-3">Darbinieks</th>
+                    <th class="px-4 py-3">Sākums</th>
+                    <th class="px-4 py-3">Ilgums</th>
                   </tr>
                 </thead>
                 <tbody class="text-gray-800 text-sm divide-y divide-gray-100">
                   <tr v-for="shift in filteredShiftsByDate" :key="shift.id" class="hover:bg-gray-50">
                     <td class="px-4 py-3">{{ shift.employee ? `${shift.employee.vards} ${shift.employee.uzvards}` : 'Nav zināms' }}</td>
-                    <td class="px-4 py-3">{{ shift.start_time ? new Date(shift.start_time).toLocaleString('lv-LV') : 'Nav sākts' }}</td>
-                    <td class="px-4 py-3">{{ shift.end_time ? new Date(shift.end_time).toLocaleString('lv-LV') : 'Nav beidzts' }}</td>
+                    <td class="px-4 py-3">{{ shift.start_time ? new Date(shift.start_time).toLocaleDateString('lv-LV') : 'Nav sākts' }}</td>
                     <td class="px-4 py-3">{{ shift.end_time ? calculateShiftDuration(shift.start_time, shift.end_time) : 'Nav beidzts' }}</td>
                   </tr>
                   <tr v-if="filteredShiftsByDate.length === 0">
-                    <td colspan="5" class="px-4 py-3 text-center text-gray-500">Nav maiņu</td>
+                    <td colspan="3" class="px-4 py-3 text-center text-gray-500">Nav maiņu</td>
                   </tr>
                 </tbody>
               </table>
@@ -713,69 +756,53 @@
         </div>
 
         <div v-else-if="currentTab === 'stats'">
-          <h1 class="text-3xl font-bold text-gray-900 mb-6">Vispārīgā statistika</h1>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-800 mb-2">Pasūtījumi</h3>
-              <p class="text-3xl font-bold text-gray-900">{{ stats.total_orders }}</p>
-              <p class="text-sm text-gray-600">Pabeigti: {{ completedOrdersCount }}</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-800 mb-2">Materiāli</h3>
-              <p class="text-3xl font-bold text-gray-900">{{ stats.total_materials }}</p>
-              <p class="text-sm text-gray-600">Pieejami: {{ totalAvailableMaterials }}</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-800 mb-2">Darbinieki</h3>
-              <p class="text-3xl font-bold text-gray-900">{{ stats.total_workers }}</p>
-              <p class="text-sm text-gray-600">Aktīvi: {{ totalEmployees }}</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-800 mb-2">Kopējais materiālu daudzums</h3>
-              <p class="text-3xl font-bold text-gray-900">{{ stats.total_materials_quantity }}</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-800 mb-2">Kopējā pasūtījumu vērtība</h3>
-              <p class="text-3xl font-bold text-gray-900">{{ stats.total_orders_value }}</p>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-800 mb-2">Maiņu skaits</h3>
-              <p class="text-3xl font-bold text-gray-900">{{ stats.total_shifts }}</p>
+          <div class="bg-white rounded-lg shadow-md p-4 mb-4" v-if="currentTab === 'stats'">
+            <h2 class="text-xl font-semibold mb-4">Vispārējā statistika</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div class="bg-gray-100 p-3 rounded-md text-center">
+                <p class="text-sm text-gray-600">Maiņu skaits</p>
+                <p class="text-2xl font-bold text-gray-800">{{ stats.total_shifts }}</p>
+              </div>
+              <div class="bg-gray-100 p-3 rounded-md text-center">
+                <p class="text-sm text-gray-600">Materiālu skaits</p>
+                <p class="text-2xl font-bold text-gray-800">{{ stats.total_materials }}</p>
+              </div>
+              <div class="bg-gray-100 p-3 rounded-md text-center">
+                <p class="text-sm text-gray-600">Darbinieku skaits</p>
+                <p class="text-2xl font-bold text-gray-800">{{ stats.total_workers }}</p>
+              </div>
+              <div class="bg-gray-100 p-3 rounded-md text-center">
+                <p class="text-sm text-gray-600">Pasūtījumu skaits</p>
+                <p class="text-2xl font-bold text-gray-800">{{ stats.total_orders }}</p>
+              </div>
             </div>
           </div>
 
-          <h2 class="text-2xl font-bold text-gray-900 mb-6">Materiālu patēriņa statistika</h2>
-          <input 
-            v-model="materialStatsSearchQuery" 
-            type="text" 
-            placeholder="Meklēt materiālu statistikā..."
-            class="max-w-xs w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none transition-colors mb-6"
-          />
-
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 5 visvairāk izmantotie materiāli</h3>
-              <ul class="space-y-3">
-                <li v-for="(stat, index) in topMaterialStats" :key="stat.id" class="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                  <div class="flex items-center gap-3">
-                    <span class="font-bold text-gray-700">{{ getRanking(stat) }}.</span>
-                    <span class="text-gray-800">{{ stat.nosaukums }}</span>
-                  </div>
-                  <span class="px-3 py-1 text-sm font-semibold rounded-full" :style="{ backgroundColor: getChartColor(index), color: 'white' }">
-                    {{ stat.totalUsed }} {{ stat.vieniba }}
-                  </span>
-                </li>
-                <li v-if="topMaterialStats.length === 0" class="text-center text-gray-500 py-4">Nav datu par materiālu patēriņu.</li>
-              </ul>
+          <div class="bg-white rounded-lg shadow-md p-4" v-if="currentTab === 'stats'">
+            <h2 class="text-xl font-semibold mb-4">Top 5 visvairāk izmantotie materiāli</h2>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Materiāls</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Izmantots</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vienība</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="(material, index) in topMaterialStats" :key="index">
+                    <td class="px-6 py-4 whitespace-nowrap">{{ material.nosaukums }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ material.totalUsed }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">{{ material.vieniba }}</td>
+                  </tr>
+                  <tr v-if="topMaterialStats.length === 0">
+                    <td colspan="3" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">Nav datu par materiālu patēriņu.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-800 mb-4">Kopējais materiālu patēriņš</h3>
-              <div class="flex items-end justify-between mb-4">
-                <p class="text-4xl font-bold text-gray-900">{{ totalMaterialUsage }}</p>
-                <p class="text-lg font-medium text-gray-600">Maksimālais: {{ maxMaterialUsage }}</p>
-              </div>
-              <p class="text-sm text-gray-600">Visvairāk izmantotais: {{ mostUsedMaterial.nosaukums || 'N/A' }} ({{ mostUsedMaterial.totalUsed || 0 }} {{ mostUsedMaterial.vieniba || '' }})</p>
+            <div class="mt-4">
+              <p class="text-lg font-semibold">Kopējais izmantoto materiālu daudzums: {{ totalMaterialUsage }}</p>
             </div>
           </div>
         </div>
@@ -830,12 +857,16 @@
 <script setup>
 import { ref, computed, onMounted, watch, h, onUnmounted } from 'vue';
 import { useToast } from 'vue-toastification';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import axios from 'axios';
 import OrderDetailsModal from '../components/OrderDetailsModal.vue'
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 const toast = useToast();
+
+// Initialize PDF libraries
+const pdfLib = ref(jsPDF);
+const isPdfLibsReady = ref(true);
 
 // --- State variables ---
 const currentTab = ref('orders');
@@ -854,9 +885,7 @@ const stats = ref({
   total_materials: 0,
   total_workers: 0,
   total_orders: 0,
-  total_shifts: 0,
-  total_materials_quantity: 0,
-  total_orders_value: 0
+  total_shifts: 0
 });
 
 // Counts/summaries
@@ -895,7 +924,7 @@ const transferData = ref({ // Data for material transfer form
 const formData = ref({
   nosaukums: '',
   daudzums: 0,
-  vieniba: 'kg', 
+  vieniba: 'kg',
   noliktava: 'Centrālā noliktava',
   vieta: '',
   password: '',
@@ -906,23 +935,21 @@ const formData = ref({
   amats: '',
   epasts: '',
   telefons: '',
-  role: 'employee',
-  responsible_employee_id: null // For orders
+  role: 'employee'
 });
 
 // Search and sort states
 const searchQuery = ref('');
-const sortBy = ref('');
-const sortDirection = ref('asc');
+const sortBy = ref('nosaukums'); // Default sort field
+const sortDirection = ref('asc'); // Default sort direction
 const materialSearch = ref(''); // For searching materials within order form
 
 // Specific refs for shift filtering and sorting
 const dateRange = ref({ start: null, end: null });
-const shiftSortKey = ref('start_time'); // Default sort key for shifts
-const shiftSortAsc = ref(true); // Default sort direction for shifts (asc)
+const shiftSortKey = ref('worker_name'); // Default sort field for shifts
+const shiftSortAsc = ref(true); // Default sort direction for shifts
 
 // PDF library status
-const isPdfLibsReady = ref(false);
 const isPdfLibsLoading = ref(false);
 
 // Material quantity validation (if used for specific input element ref)
@@ -1086,7 +1113,11 @@ const filteredMaterialStats = computed(() => {
 });
 
 const totalMaterialUsage = computed(() => {
-  return filteredMaterialStats.value.reduce((sum, stat) => sum + (stat.totalUsed || 0), 0);
+  const total = filteredMaterialStats.value.reduce((sum, stat) => sum + (stat.totalUsed || 0), 0);
+  return Number(total).toLocaleString('lv-LV', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 });
 
 const maxMaterialUsage = computed(() => {
@@ -1094,13 +1125,30 @@ const maxMaterialUsage = computed(() => {
 });
 
 const mostUsedMaterial = computed(() => {
-  return filteredMaterialStats.value.reduce((prev, current) => (
+  const material = filteredMaterialStats.value.reduce((prev, current) => (
     (prev.totalUsed || 0) > (current.totalUsed || 0) ? prev : current
   ), {});
+  
+  return {
+    ...material,
+    totalUsed: material.totalUsed ? Number(material.totalUsed).toLocaleString('lv-LV', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }) : '0'
+  };
 });
 
 const topMaterialStats = computed(() => {
-  return filteredMaterialStats.value.sort((a, b) => (b.totalUsed || 0) - (a.totalUsed || 0)).slice(0, 5);
+  return filteredMaterialStats.value
+    .sort((a, b) => (b.totalUsed || 0) - (a.totalUsed || 0))
+    .slice(0, 5)
+    .map(stat => ({
+      ...stat,
+      totalUsed: Number(stat.totalUsed).toLocaleString('lv-LV', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    }));
 });
 
 // Chart colors (ensure unique values for proper display)
@@ -1167,44 +1215,67 @@ const fetchShifts = async () => {
 
 const fetchStats = async () => {
   try {
-    const response = await axios.get('/api/stats', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    const response = await axios.get('https://backend-psi-blush-35.vercel.app/api/stats', {
+      headers: { 
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
     });
-    console.log('Stats response:', response.data);
+    
     if (response.data) {
-      const shiftsData = Array.isArray(response.data.shifts) ? response.data.shifts : [];
-      const materialUsageData = Array.isArray(response.data.material_usage_data) ? response.data.material_usage_data : [];
+      // Update stats with the response data
+      stats.value = {
+        shifts: response.data.shifts || [],
+        material_usage_data: response.data.material_usage_data || [],
+        total_materials: response.data.total_materials || 0,
+        total_workers: response.data.total_workers || 0,
+        total_orders: response.data.total_orders || 0,
+        total_shifts: response.data.total_shifts || 0
+      };
 
-      stats.value = {
-        ...response.data,
-        shifts: shiftsData,
-        material_usage_data: materialUsageData
-      };
-    } else {
-      console.error('Invalid stats data format:', response.data);
-      stats.value = {
-        shifts: [],
-        material_usage_data: [],
-        total_materials: 0,
-        total_workers: 0,
-        total_orders: 0,
-        total_shifts: 0,
-        total_materials_quantity: 0,
-        total_orders_value: 0
-      };
+      // Update other related stats
+      totalMaterials.value = stats.value.total_materials;
+      totalOrders.value = stats.value.total_orders;
+      totalEmployees.value = stats.value.total_workers;
+      totalShifts.value = stats.value.total_shifts;
+      totalAvailableMaterials.value = stats.value.total_materials_quantity;
+      
+      // Calculate completed orders count
+      completedOrdersCount.value = orders.value.filter(order => order.status === 'Pabeigts').length;
     }
   } catch (error) {
     console.error('Error loading stats:', error);
+    toast.error('Neizdevās ielādēt statistiku');
+    
+    // Reset stats to default values
     stats.value = {
       shifts: [],
       material_usage_data: [],
       total_materials: 0,
       total_workers: 0,
       total_orders: 0,
-      total_shifts: 0,
-      total_materials_quantity: 0,
-      total_orders_value: 0
+      total_shifts: 0
     };
+  }
+};
+
+// Function to load PDF libraries and fonts
+const loadPdfLibs = async () => {
+  isPdfLibsLoading.value = true;
+  try {
+    // Use jsPDF's built-in font support
+    const doc = new jsPDF();
+    doc.setFont('helvetica');
+    doc.setFontSize(10);
+    
+    isPdfLibsReady.value = true;
+    toast.success('PDF bibliotēkas ielādētas');
+  } catch (error) {
+    console.error('Error loading PDF libraries or fonts:', error);
+    toast.error('Neizdevās ielādēt PDF bibliotēkas vai fontus');
+    isPdfLibsReady.value = false;
+  } finally {
+    isPdfLibsLoading.value = false;
   }
 };
 
@@ -1215,6 +1286,7 @@ onMounted(() => {
   fetchEmployees();
   fetchShifts();
   fetchStats();
+  loadPdfLibs(); // Load PDF libs when component mounts
 });
 
 // Watch for changes in currentTab to re-fetch relevant data or update counts
@@ -1259,7 +1331,7 @@ const openAddDialog = (type) => {
   showAddDialog.value = true;
   // Reset form data based on type
   if (type === 'orders') {
-    formData.value = { nosaukums: '', daudzums: 0, responsible_employee_id: null, status: 'Nav sākts' };
+    formData.value = { nosaukums: '', daudzums: 0, status: 'Nav sākts' };
     orderMaterials.value = [];
   } else if (type === 'materials') {
     formData.value = { nosaukums: '', daudzums: 0, vieniba: 'kg', noliktava: 'Centrālā noliktava', vieta: '' };
@@ -1280,7 +1352,6 @@ const openEditDialog = (item, type) => {
       id: item.id,
       nosaukums: item.nosaukums,
       daudzums: item.daudzums,
-      responsible_employee_id: item.employee?.id || null,
       status: item.status
     };
     // Deep copy materials for editing and convert to the format expected by the form
@@ -1339,8 +1410,7 @@ const closeDialog = () => {
     amats: '',
     epasts: '',
     telefons: '',
-    role: 'employee',
-    responsible_employee_id: null
+    role: 'employee'
   };
 };
 
@@ -1355,7 +1425,6 @@ const addOrder = async () => {
   const orderData = {
     nosaukums: formData.value.nosaukums,
     daudzums: formData.value.daudzums,
-    employee_id: formData.value.responsible_employee_id,
     status: formData.value.status,
     materials: orderMaterials.value.map(mat => ({
       material_id: mat.material_id || mat.id,
@@ -1734,160 +1803,257 @@ const formatDate = (dateString) => {
 
 const fontPath = '/api/fonts/DejaVuSans.ttf';
 
-const loadFont = async () => {
-  try {
-    isPdfLibsLoading.value = true;
-    const response = await fetch(fontPath);
-    if (!response.ok) {
-      console.error(`Failed to fetch font: ${response.status} ${response.statusText}`);
-      throw new Error('Failed to fetch font');
-    }
-    const fontData = await response.arrayBuffer();
-    const fontBase64 = btoa(String.fromCharCode(...new Uint8Array(fontData)));
-
-    jsPDF.API.addFileToVFS('DejaVuSans.ttf', fontBase64);
-    jsPDF.API.addFont('DejaVuSans.ttf', 'DejaVuSans', 'normal', 'Identity-H');
-    console.log('Font DejaVuSans registered successfully with Identity-H encoding.');
-    console.log('jsPDF Font List after registration:', jsPDF.API.getFontList());
-    isPdfLibsReady.value = true;
-    isPdfLibsLoading.value = false;
-    return true;
-  } catch (error) {
-    console.error('Error loading font:', error);
-    toast.error('Neizdevās ielādēt fontu');
-    isPdfLibsLoading.value = false;
-    return false;
-  }
-};
-
 const generatePDF = async (type) => {
-  try {
-    const fontLoaded = await loadFont();
-    if (!fontLoaded) {
-      return;
-    }
+  if (!isPdfLibsReady.value) {
+    toast.error('PDF bibliotēkas vēl nav ielādētas. Lūdzu, mēģiniet vēlreiz.');
+    return;
+  }
 
+  try {
+    const now = new Date();
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4',
-      floatPrecision: 16
+      compress: true,
+      encoding: 'UTF-8'
     });
 
-    doc.setFont('DejaVuSans', 'normal');
+    // Use standard font that supports Latvian characters
+    doc.setFont('helvetica');
     doc.setFontSize(16);
-    doc.text(type === 'orders' ? 'Pasūtījumu saraksts' :
-            type === 'materials' ? 'Materiālu saraksts' :
-            type === 'workers' ? 'Darbinieku saraksts' :
-            'Maiņu saraksts', 14, 20);
+    
+    const encodeText = (text) => {
+      if (!text) return '';
+      return text
+        .replace(/ā/g, 'a')
+        .replace(/č/g, 'c')
+        .replace(/ē/g, 'e')
+        .replace(/ģ/g, 'g')
+        .replace(/ī/g, 'i')
+        .replace(/ķ/g, 'k')
+        .replace(/ļ/g, 'l')
+        .replace(/ņ/g, 'n')
+        .replace(/š/g, 's')
+        .replace(/ū/g, 'u')
+        .replace(/ž/g, 'z')
+        .replace(/Ā/g, 'A')
+        .replace(/Č/g, 'C')
+        .replace(/Ē/g, 'E')
+        .replace(/Ģ/g, 'G')
+        .replace(/Ī/g, 'I')
+        .replace(/Ķ/g, 'K')
+        .replace(/Ļ/g, 'L')
+        .replace(/Ņ/g, 'N')
+        .replace(/Š/g, 'S')
+        .replace(/Ū/g, 'U')
+        .replace(/Ž/g, 'Z');
+    };
 
-    doc.setFontSize(12);
-    doc.text('Testa rinda: čšņķļdzāēīū', 14, 28);
+    if (type === 'stats') {
+      // Add general statistics
+      doc.text(encodeText('Vispārīgā statistika'), 14, 20);
+      doc.setFontSize(10);
+      doc.text(encodeText(`Izveidots: ${now.toLocaleDateString('lv-LV')} ${now.toLocaleTimeString('lv-LV')}`), 14, 35);
 
-    doc.setFontSize(10);
-    const now = new Date();
-    doc.text(`Izveidots: ${now.toLocaleDateString('lv-LV')} ${now.toLocaleTimeString('lv-LV')}`, 14, 35);
+      // Add statistics table
+      doc.autoTable({
+        head: [[encodeText('Statistika'), encodeText('Vērtība')]],
+        body: [
+          [encodeText('Maiņu skaits'), stats.value.total_shifts],
+          [encodeText('Materiālu skaits'), stats.value.total_materials],
+          [encodeText('Darbinieku skaits'), stats.value.total_workers],
+          [encodeText('Pasūtījumu skaits'), stats.value.total_orders]
+        ],
+        startY: 45,
+        margin: { top: 40 },
+        styles: {
+          font: 'helvetica',
+          fontSize: 10,
+          cellPadding: 5,
+          overflow: 'linebreak',
+          fontStyle: 'normal'
+        },
+        headStyles: {
+          fillColor: [41, 41, 41],
+          textColor: 255,
+          fontStyle: 'bold',
+          halign: 'center',
+          font: 'helvetica'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+          font: 'helvetica'
+        }
+      });
 
-    let tableData = [];
-    let columns = [];
+      // Add material usage statistics
+      doc.setFontSize(14);
+      doc.text(encodeText('Materiālu patēriņa statistika'), 14, doc.lastAutoTable.finalY + 20);
 
-    if (type === 'orders') {
-      columns = [
-        { header: 'Nosaukums', dataKey: 'nosaukums' },
-        { header: 'Daudzums', dataKey: 'daudzums' },
-        { header: 'Statuss', dataKey: 'status' },
-        { header: 'Atbildīgais', dataKey: 'responsible_employee' }
-      ];
-      tableData = (orders.value || []).map(order => ({
-        nosaukums: order.nosaukums,
-        daudzums: order.daudzums,
-        status: order.status,
-        responsible_employee: order.employee ? `${order.employee.vards} ${order.employee.uzvards}` : 'Nav'
-      }));
-    } else if (type === 'materials') {
-      columns = [
-        { header: 'Nosaukums', dataKey: 'nosaukums' },
-        { header: 'Noliktava', dataKey: 'noliktava' },
-        { header: 'Vieta', dataKey: 'vieta' },
-        { header: 'Daudzums', dataKey: 'daudzums' },
-        { header: 'Vienība', dataKey: 'vieniba' }
-      ];
-      tableData = (materials.value || []).map(material => ({
-        nosaukums: material.nosaukums,
-        noliktava: material.noliktava,
-        vieta: material.vieta,
-        daudzums: material.daudzums,
-        vieniba: material.vieniba
-      }));
-    } else if (type === 'workers') {
-      columns = [
-        { header: 'Vārds', dataKey: 'vards' },
-        { header: 'Uzvārds', dataKey: 'uzvards' },
-        { header: 'Kods', dataKey: 'kods' },
-        { header: 'Amats', dataKey: 'amats' },
-        { header: 'Statuss', dataKey: 'status' }
-      ];
-      tableData = (employees.value || []).map(employee => ({
-        vards: employee.vards,
-        uzvards: employee.uzvards,
-        kods: employee.kods,
-        amats: employee.amats,
-        status: employee.status
-      }));
-    } else if (type === 'shifts') {
-      columns = [
-        { header: 'Darbinieks', dataKey: 'worker_name' },
-        { header: 'Sākums', dataKey: 'start_time' },
-        { header: 'Beigas', dataKey: 'end_time' },
-        { header: 'Ilgums', dataKey: 'duration' }
-      ];
-      tableData = (shifts.value || []).map(shift => ({
-        worker_name: shift.employee ? `${shift.employee.vards} ${shift.employee.uzvards}` : 'Nav zināms',
-        start_time: shift.start_time ? new Date(shift.start_time).toLocaleString('lv-LV') : 'Nav sākts',
-        end_time: shift.end_time ? new Date(shift.end_time).toLocaleString('lv-LV') : 'Nav beidzts',
-        duration: shift.end_time ? calculateShiftDuration(shift.start_time, shift.end_time) : 'Nav beidzts'
-      }));
-    }
+      // Add top materials table
+      doc.autoTable({
+        head: [[encodeText('Materiāls'), encodeText('Izmantots'), encodeText('Vienība')]],
+        body: topMaterialStats.value.map(stat => [
+          encodeText(stat.nosaukums),
+          stat.totalUsed,
+          encodeText(stat.vieniba)
+        ]),
+        startY: doc.lastAutoTable.finalY + 30,
+        margin: { top: 40 },
+        styles: {
+          font: 'helvetica',
+          fontSize: 10,
+          cellPadding: 5,
+          overflow: 'linebreak',
+          fontStyle: 'normal'
+        },
+        headStyles: {
+          fillColor: [41, 41, 41],
+          textColor: 255,
+          fontStyle: 'bold',
+          halign: 'center',
+          font: 'helvetica'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+          font: 'helvetica'
+        }
+      });
 
-    doc.autoTable({
-      head: [columns.map(col => col.header)],
-      body: tableData.map(row => columns.map(col => row[col.dataKey])),
-      startY: 45,
-      margin: { top: 40 },
-      styles: {
-        font: 'DejaVuSans',
-        fontSize: 10,
-        cellPadding: 5,
-        overflow: 'linebreak',
-        fontStyle: 'normal'
-      },
-      headStyles: {
-        fillColor: [41, 41, 41],
-        textColor: 255,
-        fontStyle: 'bold',
-        halign: 'center',
-        font: 'DejaVuSans'
-      },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245],
-        font: 'DejaVuSans'
-      },
-      columnStyles: {
-        0: { cellWidth: 40 },
-        1: { cellWidth: 40 },
-        2: { cellWidth: 30 },
-        3: { cellWidth: 40 },
-        4: { cellWidth: 30 }
-      },
-      didDrawPage: function(data) {
-        doc.setFontSize(10);
-        doc.text(
-          'Lapa ' + doc.internal.getNumberOfPages(),
-          data.settings.margin.left,
-          doc.internal.pageSize.height - 10
-        );
+      // Add material usage summary
+      doc.autoTable({
+        head: [[encodeText('Kopējais izmantoto materiālu daudzums')]],
+        body: [[totalMaterialUsage.value]],
+        startY: doc.lastAutoTable.finalY + 20,
+        margin: { top: 40 },
+        styles: {
+          font: 'helvetica',
+          fontSize: 10,
+          cellPadding: 5,
+          overflow: 'linebreak',
+          fontStyle: 'normal'
+        },
+        headStyles: {
+          fillColor: [41, 41, 41],
+          textColor: 255,
+          fontStyle: 'bold',
+          halign: 'center',
+          font: 'helvetica'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+          font: 'helvetica'
+        }
+      });
+    } else {
+      doc.text(encodeText(type === 'orders' ? 'Pasūtījumu saraksts' :
+              type === 'materials' ? 'Materiālu saraksts' :
+              type === 'workers' ? 'Darbinieku saraksts' :
+              'Maiņu saraksts'), 14, 20);
+
+      doc.setFontSize(10);
+      doc.text(encodeText(`Izveidots: ${now.toLocaleDateString('lv-LV')} ${now.toLocaleTimeString('lv-LV')}`), 14, 35);
+
+      let tableData = [];
+      let columns = [];
+
+      if (type === 'orders') {
+        columns = [
+          { header: encodeText('Nosaukums'), dataKey: 'nosaukums' },
+          { header: encodeText('Daudzums'), dataKey: 'daudzums' },
+          { header: encodeText('Statuss'), dataKey: 'status' }
+        ];
+        tableData = (filteredOrders.value || []).map(order => ({
+          nosaukums: encodeText(order.nosaukums),
+          daudzums: order.daudzums,
+          status: encodeText(order.status)
+        }));
+      } else if (type === 'materials') {
+        columns = [
+          { header: encodeText('Nosaukums'), dataKey: 'nosaukums' },
+          { header: encodeText('Daudzums'), dataKey: 'daudzums' },
+          { header: encodeText('Vienība'), dataKey: 'vieniba' },
+          { header: encodeText('Noliktava'), dataKey: 'noliktava' },
+          { header: encodeText('Vieta'), dataKey: 'vieta' },
+          { header: encodeText('Rezervēts'), dataKey: 'reserved_quantity' }
+        ];
+        tableData = (filteredMaterials.value || []).map(material => ({
+          nosaukums: encodeText(material.nosaukums),
+          daudzums: material.daudzums,
+          vieniba: encodeText(material.vieniba),
+          noliktava: encodeText(material.noliktava),
+          vieta: encodeText(material.vieta),
+          reserved_quantity: material.reserved_quantity
+        }));
+      } else if (type === 'workers') {
+        columns = [
+          { header: encodeText('Vārds'), dataKey: 'vards' },
+          { header: encodeText('Uzvārds'), dataKey: 'uzvards' },
+          { header: encodeText('Kods'), dataKey: 'kods' },
+          { header: encodeText('Amats'), dataKey: 'amats' },
+          { header: encodeText('Statuss'), dataKey: 'status' }
+        ];
+        tableData = (filteredEmployees.value || []).map(employee => ({
+          vards: encodeText(employee.vards),
+          uzvards: encodeText(employee.uzvards),
+          kods: employee.kods,
+          amats: encodeText(employee.amats),
+          status: encodeText(employee.status)
+        }));
+      } else if (type === 'shifts') {
+        columns = [
+          { header: encodeText('Darbinieks'), dataKey: 'worker_name' },
+          { header: encodeText('Sākums'), dataKey: 'start_time' },
+          { header: encodeText('Ilgums'), dataKey: 'duration' }
+        ];
+        tableData = (filteredShiftsByDate.value || []).map(shift => ({
+          worker_name: shift.employee ? encodeText(`${shift.employee.vards} ${shift.employee.uzvards}`) : encodeText('Nav zināms'),
+          start_time: shift.start_time ? new Date(shift.start_time).toLocaleDateString('lv-LV') : encodeText('Nav sākts'),
+          duration: shift.end_time ? encodeText(calculateShiftDuration(shift.start_time, shift.end_time)) : encodeText('Nav beidzts')
+        }));
       }
-    });
+
+      doc.autoTable({
+        head: [columns.map(col => col.header)],
+        body: tableData.map(row => columns.map(col => row[col.dataKey])),
+        startY: 45,
+        margin: { top: 40 },
+        styles: {
+          font: 'helvetica',
+          fontSize: 10,
+          cellPadding: 5,
+          overflow: 'linebreak',
+          fontStyle: 'normal'
+        },
+        headStyles: {
+          fillColor: [41, 41, 41],
+          textColor: 255,
+          fontStyle: 'bold',
+          halign: 'center',
+          font: 'helvetica'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+          font: 'helvetica'
+        },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 40 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 40 },
+          4: { cellWidth: 30 }
+        },
+        didDrawPage: function(data) {
+          doc.setFontSize(10);
+          doc.text(
+            encodeText('Lapa ' + doc.internal.getNumberOfPages()),
+            data.settings.margin.left,
+            doc.internal.pageSize.height - 10
+          );
+        }
+      });
+    }
 
     doc.save(`${type}_${now.toISOString().split('T')[0]}.pdf`);
     toast.success('PDF veiksmīgi izveidots');
@@ -1988,4 +2154,29 @@ const openDetailsDialog = (order) => {
   selectedOrder.value = order
   showOrderDetails.value = true
 }
+
+// Computed properties for formatting statistics
+const formattedTotalMaterialsQuantity = computed(() => {
+  return Number(stats.value.total_materials_quantity).toLocaleString('lv-LV', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+});
+
+const formattedTotalOrdersValue = computed(() => {
+  return Number(stats.value.total_orders_value).toLocaleString('lv-LV', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+});
+
+const formattedMaterialUsage = computed(() => {
+  return stats.value.material_usage_data.map(stat => ({
+    ...stat,
+    totalUsed: Number(stat.totalUsed).toLocaleString('lv-LV', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+  }));
+});
 </script>

@@ -11,6 +11,7 @@ declare module 'vue' {
     AdminLayout: typeof import('./components/admin/AdminLayout.vue')['default']
     AdminNavbar: typeof import('./components/admin/AdminNavbar.vue')['default']
     AdminSidebar: typeof import('./components/admin/AdminSidebar.vue')['default']
+    AdminTable: typeof import('./components/AdminTable.vue')['default']
     DashboardStats: typeof import('./components/DashboardStats.vue')['default']
     DetailsDialog: typeof import('./components/admin/dialogs/DetailsDialog.vue')['default']
     EditDialog: typeof import('./components/admin/dialogs/EditDialog.vue')['default']

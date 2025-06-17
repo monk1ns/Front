@@ -189,9 +189,28 @@ const acceptOrder = async () => {
       return;
     }
 
-    // Обновляем детали заказа сразу после принятия
+    // Обновляем детали заказа и материалы
     await fetchOrder();
-    // Принудительно обновляем currentUser.id из localStorage (на случай, если он изменился)
+    
+    // Обновляем список материалов
+    try {
+      const materialsResponse = await fetch('https://backend-psi-blush-35.vercel.app/materials', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (materialsResponse.ok) {
+        const materialsData = await materialsResponse.json();
+        // Обновляем материалы в родительском компоненте, если он существует
+        if (typeof window.updateMaterials === 'function') {
+          window.updateMaterials(materialsData);
+        }
+      }
+    } catch (materialsError) {
+      console.error("Error refreshing materials:", materialsError);
+    }
+
+    // Принудительно обновляем currentUser.id из localStorage
     currentUser.id = parseInt(localStorage.getItem("userId")) || null;
   } catch (err) {
     console.error("Error accepting order:", err);
